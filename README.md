@@ -2,8 +2,8 @@
 ======
 
 ## Submission Instructions
-* Work in a fork of this repository
-* Work in a branch on your fork
+<!-- * Work in a fork of this repository
+* Work in a branch on your fork -->
 * Open a pull request to this repository
 * Submit on canvas a question and observation, how long you spent, and a link to your pull request
 
