@@ -3,7 +3,6 @@
 const net = require('net');
 const logger = require('./logger');
 const faker = require('faker');
-const server = module.exports = {};
 
 const app = net.createServer();
 let clients = [];
@@ -11,24 +10,29 @@ let clients = [];
 // * Create a Client constructor that models an individual connection. 
 //   * Each client instance should contain at least an `id`, `nickname`, and `socket`.
 function Client(id, nickname, socket) {
-  this.socket = socket,
-  this.id = id,
-  this.nickname = nickname
+  this.socket = socket;
+  this.id = id;
+  this.nickname = nickname;
 }
 
 // * DONE The client should send `@quit` to disconnect
 //   * DONE The client should send `@list` to list all connected users
 //   * The client should send `@nickname <new-name>` to change their nickname
-  // * The client should send `@dm <to-username> <message>` to  send a message directly to another user by nickname
+// * The client sh send `@dm <to-username> <message>` to  send a message directly 2 user by nickname
+
+const removeClient = socket => () => {
+  clients = clients.filter(client => client !== socket);
+  logger.log(logger.INFO, `Removing ${socket.name}`);
+};
 
 const parseCommand = (message, socket) => {
-  if(!message.startsWith('@')) {
+  if (!message.startsWith('@')) {
     return false; 
   }
   const parsedMessage = message.split(' ');
   const command = parsedMessage[0];
   logger.log(logger.INFO, `Parsing a command ${command}`);
-}
+};
 // O(n) time and O(n) space using .map but we can use forEach
 // @dm and default: from lecture
 switch (command) {
@@ -44,15 +48,10 @@ switch (command) {
     break;
   }
   case '@nickname': {
-    clients.forEach((client) => {
-      if( client.name === parsedMessage[1]) {
-        client.nickname = parsedMessage[1];
-      }
-    });
     break;
   }
   case '@dm': {
-    client.forEach((client) => {
+    clients.forEach((client) => {
       if (client.socket == socket) {
         client.socket.write(`${parsedMessage[2]}\n`);
       }
@@ -62,12 +61,8 @@ switch (command) {
   default:
     socket.write('Invalid');
     break;
-}
+  }
   return true;
-
-const removeClient = socket => () => {
-  clients = clients.filter(client => client !== socket);
-  logger.log(logger.INFO, `Removing ${socket.name}`);
 };
 
 app.on('connection', (socket) => {
@@ -85,7 +80,6 @@ app.on('connection', (socket) => {
       return;
     }
     // check for messages
-
     clients.forEach((client) => {
       if (client !== socket) {
         client.write(`$${socket.name}: ${message}\n`);
