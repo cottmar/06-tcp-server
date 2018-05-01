@@ -1,19 +1,32 @@
 'use strict';
 
 const net = require('net');
+const Client = require('./client');
+const commands = require('./commands')
 const logger = require('./logger');
-const faker = require('faker');
+
+const server - module.exports = net.createServer();
 
 const app = net.createServer();
-let clients = [];
+let clientPool = [];
+const PORT = process.env.PORT;
 
-// * Create a Client constructor that models an individual connection. 
-//   * Each client instance should contain at least an `id`, `nickname`, and `socket`.
-function Client(id, nickname, socket) {
-  this.socket = socket;
-  this.id = id;
-  this.nickname = nickname;
-}
+server.on('connect to server', (socket) => {
+  const client = new Client(socket);
+  clientPool.push(client);
+  client.socket.write(`Welcome to the chat! Your nickname is ${client.nickname}`);
+
+  clientPool.map(c => c.socket.write(`\t${client.nickname} has joined the chat. \n`));
+  socket.on('data', (data => {
+    const message = data.toString().trim();
+
+    if(message.slick(0, 1) === '@') commands.parse(message, client, clientPool);
+    else {
+      clientPool.filter(c => c.id !== client.id)
+      .map(c => c.socket.write(`${client.nickname}: ${message}\n`));
+    }
+  })
+})
 
 // * DONE The client should send `@quit` to disconnect
 //   * DONE The client should send `@list` to list all connected users
@@ -43,8 +56,7 @@ switch (command) {
   }
 
   case '@quit': {
-    removeClient(socket)();
-    socket.destroy();
+    
     break;
   }
   case '@nickname': {
@@ -63,7 +75,7 @@ switch (command) {
     break;
   }
   return true;
-};
+}
 
 app.on('connection', (socket) => {
   logger.log(logger.INFO, 'new socket');
